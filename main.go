@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"time"
@@ -11,21 +12,23 @@ import (
 )
 
 var (
-	awsRegion         = "ap-southeast-2"
-	historyFrom int64 = 1577836800
-	historyTo   int64 = 1593561600
+	awsRegion = flag.String("region", "ap-southeast-2", "AWS region")
+	startTime = flag.Int64("start", 1577836800, "Earliest event (unixtime)")
+	endTime   = flag.Int64("end", 1593561600, "Latest event (unixtime)")
 )
 
 func main() {
 
+	flag.Parse()
+
 	// CloudTrail service:
-	cloudTrail := cloudtrail.New(session.Must(session.NewSession(aws.NewConfig().WithRegion(awsRegion))))
+	cloudTrail := cloudtrail.New(session.Must(session.NewSession(aws.NewConfig().WithRegion(*awsRegion))))
 
 	// Define request parameters:
 	lookupEventsInput := &cloudtrail.LookupEventsInput{
 		MaxResults: aws.Int64(50),
-		StartTime:  aws.Time(time.Unix(historyFrom, 0)),
-		EndTime:    aws.Time(time.Unix(historyTo, 0)),
+		StartTime:  aws.Time(time.Unix(*startTime, 0)),
+		EndTime:    aws.Time(time.Unix(*endTime, 0)),
 	}
 
 	// Call CloudTrail asking for more and more events:
